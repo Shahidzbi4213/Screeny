@@ -9,10 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.Priority;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
-import com.gulehri.edu.pk.screeny.R;
 import com.gulehri.edu.pk.screeny.databinding.ImageItemBinding;
 import com.gulehri.edu.pk.screeny.model.Model;
 import com.gulehri.edu.pk.screeny.ui.FullActivity;
@@ -38,17 +34,9 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.Pics
     @Override
     public void onBindViewHolder(@NonNull WallpaperAdapter.PicsHolder holder, int position) {
 
-        RequestOptions options = new RequestOptions()
-                .centerCrop()
-                .placeholder(R.drawable.loading)
-                .error(R.drawable.close)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .priority(Priority.HIGH)
-                .dontAnimate()
-                .dontTransform();
-
-        Glide.with(mContext).load(wallpaperList.get(position).getMediumUrl()).apply(options).into(holder.binding.imageView);
-
+        Glide.with(mContext)
+                .load(wallpaperList.get(position).getMediumUrl())
+                .into(holder.binding.imageView);
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(mContext, FullActivity.class);
