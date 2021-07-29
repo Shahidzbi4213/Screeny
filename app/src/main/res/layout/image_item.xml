@@ -13,7 +13,7 @@
         android:layout_marginEnd="@dimen/_5sdp"
         app:cardCornerRadius="@dimen/_5sdp"
         app:cardElevation="@dimen/_5sdp"
-        app:cardBackgroundColor="@android:color/transparent"
+        app:cardBackgroundColor="#0E0027"
         app:cardUseCompatPadding="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

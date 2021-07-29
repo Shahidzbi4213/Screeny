@@ -3,13 +3,13 @@
 
 
     <!--Background Of SplashScreen-->
-    <item android:drawable="#090B1B" />
+    <item android:drawable="@color/themeColor" />
 
     <!--Icon For Splash Screen-->
     <item >
         <bitmap
             android:gravity="center"
-            android:src="@drawable/splash_ico" />
+            android:src="@drawable/splash_icon" />
     </item>
 
 </layer-list>

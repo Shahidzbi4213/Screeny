@@ -1,9 +1,12 @@
 package com.gulehri.edu.pk.screeny.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Toast;
 
@@ -13,7 +16,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.gulehri.edu.pk.screeny.R;
@@ -29,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -36,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private List<Model> wallpaperList;
     private WallpaperAdapter adapter;
     private int pageNumber = 1;
+    private boolean flag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +51,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setAdapter();
         fetchWallpapers();
         setListeners();
+        setToolbar();
+
+    }
+
+    private void setToolbar() {
+
+        setSupportActionBar(binding.tBarMain.toolBar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
+        binding.tBarMain.toolbarText.setText(R.string.app_name);
+
     }
 
     private void setListeners() {
@@ -59,43 +73,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String url = "https://api.pexels.com/v1/curated/?page=" + pageNumber + "&per_page=40";
             StringRequest request = new StringRequest(Request.Method.GET,
                     url,
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            try {
+                    response -> {
+                        try {
 
-                                JSONObject jsonObject = new JSONObject(response);
-                                JSONArray photos = jsonObject.getJSONArray("photos");
-                                int len = photos.length();
+                            JSONObject jsonObject = new JSONObject(response);
+                            JSONArray photos = jsonObject.getJSONArray("photos");
+                            int len = photos.length();
 
-                                for (int i = 0; i < len; i++) {
+                            for (int i = 0; i < len; i++) {
 
-                                    final JSONObject object = photos.getJSONObject(i);
+                                final JSONObject object = photos.getJSONObject(i);
 
-                                    final int id = object.getInt("id");
-                                    final String imageUrl = object.getString("url");
-                                    final String photographer = object.getString("photographer");
-                                    final String photographerUrl = object.getString("photographer_url");
+                                final int id = object.getInt("id");
+                                final String imageUrl = object.getString("url");
+                                JSONObject src = object.getJSONObject("src");
+                                final String originalUrl = src.getString("original");
+                                final String mediumUrl = src.getString("medium");
 
-                                    JSONObject src = object.getJSONObject("src");
-                                    final String originalUrl = src.getString("original");
-                                    final String mediumUrl = src.getString("medium");
-
-                                    Model model = new Model(id, imageUrl, photographer, photographerUrl, originalUrl, mediumUrl);
-                                    wallpaperList.add(model);
-                                }
-                                adapter.notifyDataSetChanged();
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
+                                Model model = new Model(id, imageUrl,originalUrl, mediumUrl);
+                                wallpaperList.add(model);
                             }
+                            adapter.notifyDataSetChanged();
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
                     }, error -> {
                 Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
             }) {
 
                 @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
+                public Map<String, String> getHeaders() {
                     Map<String, String> map = new HashMap<>();
                     map.put("Authorization", "563492ad6f917000010000013c35869795db4034972b1408c54283c4");
                     return map;
@@ -141,6 +149,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return (wifi != null && wifi.isConnected()) || (mobile != null && mobile.isConnected());
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onClick(View v) {
 
@@ -172,4 +181,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        if (flag) {
+            super.onBackPressed();
+            return;
+        }
+
+        this.flag = true;
+        Toast.makeText(this, "Click again to exit", Toast.LENGTH_SHORT).show();
+        new Handler(Looper.getMainLooper()).postDelayed(() -> flag = false, 2000);
+    }
+
 }

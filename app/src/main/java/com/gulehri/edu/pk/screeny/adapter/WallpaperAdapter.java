@@ -41,8 +41,6 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.Pics
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(mContext, FullActivity.class);
             intent.putExtra("url", wallpaperList.get(position).getOriginalUrl());
-            intent.putExtra("photographer", wallpaperList.get(position).getPhotographer());
-            intent.putExtra("photographerUrl", wallpaperList.get(position).getPhotographerUrl());
             intent.putExtra("imageUrl", wallpaperList.get(position).getImageUrl());
             mContext.startActivity(intent);
         });

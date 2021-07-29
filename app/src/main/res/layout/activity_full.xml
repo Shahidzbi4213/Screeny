@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#171616"
+    android:background="@color/themeColor"
     tools:context=".ui.FullActivity">
 
     <com.github.chrisbanes.photoview.PhotoView
@@ -27,17 +27,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/download" />
-
-    <ImageButton
-        android:id="@+id/btn_info"
-        android:layout_width="@dimen/_50sdp"
-        android:layout_height="@dimen/_50sdp"
-        android:layout_marginEnd="@dimen/_20sdp"
-        android:layout_marginBottom="@dimen/_15sdp"
-        android:background="@drawable/info_bg"
-        app:layout_constraintBottom_toTopOf="@+id/btn_download"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/ic_baseline_info_24" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
