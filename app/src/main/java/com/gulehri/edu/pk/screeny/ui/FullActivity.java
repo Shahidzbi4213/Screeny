@@ -5,24 +5,20 @@ import static android.app.DownloadManager.Request.NETWORK_WIFI;
 import static android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.DownloadManager;
+import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
 
@@ -49,6 +45,7 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
     private String url;
     private String imageUrl;
     private String imageName;
+    private AlertDialog builder;
     private final String[] perms = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     @Override
@@ -59,9 +56,15 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
 
         getData();
         setImageName();
+        hideButton();
         setImageToView();
         setListener();
 
+    }
+
+    private void hideButton() {
+        binding.btnDownload.setVisibility(View.GONE);
+        binding.setWallpaper.setVisibility(View.GONE);
     }
 
     private void getData() {
@@ -80,7 +83,7 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void setImageToView() {
-        AlertDialog builder = new SpotsDialog.Builder()
+        builder = new SpotsDialog.Builder()
                 .setCancelable(false)
                 .setContext(this)
                 .setMessage("Loading Image...")
@@ -92,12 +95,15 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                         builder.hide();
+                        hideButton();
                         return false;
                     }
 
                     @Override
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                         builder.hide();
+                        binding.setWallpaper.setVisibility(View.VISIBLE);
+                        binding.btnDownload.setVisibility(View.VISIBLE);
                         return false;
                     }
                 }
@@ -106,6 +112,8 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
 
     private void setListener() {
         binding.btnDownload.setOnClickListener(this);
+        binding.setWallpaper.setOnClickListener(this);
+
     }
 
     @Override
@@ -115,11 +123,32 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
         if (id == R.id.btn_download) {
             if (haveNetworkConnection()) {
                 askPermission();
+
+                if (builder.isShowing()){
+                    builder.hide();
+                    builder.dismiss();
+                }
+
             } else {
                 Toast.makeText(this, "No Connection", Toast.LENGTH_SHORT).show();
             }
-
+        } else if (id == R.id.setWallpaper) {
+            putWallpaper();
         }
+    }
+
+    private void putWallpaper() {
+        WallpaperManager manager = (WallpaperManager) this.getSystemService(WALLPAPER_SERVICE);
+        Bitmap bitmap = ((BitmapDrawable) binding.photoView.getDrawable()).getBitmap();
+
+        try {
+            manager.setBitmap(bitmap);
+            Toast.makeText(getApplicationContext(), "Wallpaper Changed", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     private void askPermission() {
