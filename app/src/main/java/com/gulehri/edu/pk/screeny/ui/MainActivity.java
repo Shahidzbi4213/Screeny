@@ -2,11 +2,13 @@ package com.gulehri.edu.pk.screeny.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -48,9 +50,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         askPermissions();
         setAdapter();
-        fetchWallpapers();
+        fetchValue();
         setListeners();
         setToolbar();
+
+    }
+
+    private void fetchValue() {
+        SharedPreferences sharedPreferences = getPreferences(0);
+        pageNumber = sharedPreferences.getInt("page",1);
 
     }
 
@@ -179,6 +187,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 e.printStackTrace();
             }
         }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SharedPreferences sp = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor edit = sp.edit();
+        edit = edit.putInt("page", pageNumber);
+        edit.apply();
+
+        Toast.makeText(getApplicationContext(), ""+pageNumber, Toast.LENGTH_SHORT).show();
     }
 
     @Override

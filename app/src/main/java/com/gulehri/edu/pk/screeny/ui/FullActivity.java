@@ -10,6 +10,7 @@ import android.app.DownloadManager;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -42,6 +43,8 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final int REQUEST_CODE = 4213;
     private ActivityFullBinding binding;
+    private SharedPreferences sp;
+    private SharedPreferences.Editor edit;
     private String url;
     private String imageUrl;
     private String imageName;
@@ -195,5 +198,19 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
         return (wifi != null && wifi.isConnected()) || (mobile != null && mobile.isConnected());
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sp = getPreferences(0);
+        url = sp.getString("photoUrl", url);
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sp = getPreferences(MODE_PRIVATE);
+        edit =sp.edit();
+        edit = edit.putString("photoUrl", url);
+        edit.apply();
+    }
 }
