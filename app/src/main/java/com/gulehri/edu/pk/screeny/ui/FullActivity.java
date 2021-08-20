@@ -37,8 +37,6 @@ import com.bumptech.glide.request.target.Target;
 import com.gulehri.edu.pk.screeny.R;
 import com.gulehri.edu.pk.screeny.databinding.ActivityFullBinding;
 
-import dmax.dialog.SpotsDialog;
-
 public class FullActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int REQUEST_CODE = 4213;
@@ -86,25 +84,17 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void setImageToView() {
-        builder = new SpotsDialog.Builder()
-                .setCancelable(false)
-                .setContext(this)
-                .setMessage("Loading Image...")
-                .setTheme(R.style.Custom)
-                .build();
-        builder.show();
-        Glide.with(FullActivity.this).load(url).dontAnimate().listener(
+
+        Glide.with(FullActivity.this).load(url).placeholder(R.drawable.pp).dontAnimate().listener(
                 new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        builder.hide();
                         hideButton();
                         return false;
                     }
 
                     @Override
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        builder.hide();
                         binding.setWallpaper.setVisibility(View.VISIBLE);
                         binding.btnDownload.setVisibility(View.VISIBLE);
                         return false;

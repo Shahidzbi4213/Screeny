@@ -1,24 +1,36 @@
 package com.gulehri.edu.pk.screeny.ui;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.graphics.BlendModeColorFilterCompat;
+import androidx.core.graphics.BlendModeCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.gulehri.edu.pk.screeny.R;
 import com.gulehri.edu.pk.screeny.adapter.WallpaperAdapter;
 import com.gulehri.edu.pk.screeny.databinding.ActivityMainBinding;
@@ -41,6 +53,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private WallpaperAdapter adapter;
     private int pageNumber = 1;
     private boolean flag;
+    private boolean searchFlag;
+    private String searchedText;
+    private SearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +63,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        MobileAds.initialize(MainActivity.this, initializationStatus -> {
+        });
+
         askPermissions();
         setAdapter();
         fetchValue();
         setListeners();
         setToolbar();
+
+        AdView adView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
 
     }
 
@@ -75,9 +97,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.btnNext.setOnClickListener(this);
     }
 
-    private void fetchWallpapers() {
+    private void fetchWallpapers(String wUrl) {
         if (haveConnection()) {
-            String url = "https://api.pexels.com/v1/curated/?page=" + pageNumber + "&per_page=40";
+            String url = wUrl + "&per_page=80";
             StringRequest request = new StringRequest(Request.Method.GET,
                     url,
                     response -> {
@@ -106,7 +128,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             e.printStackTrace();
                         }
                     }, error -> {
-                Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
             }) {
 
                 @Override
@@ -129,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void setAdapter() {
         wallpaperList = new ArrayList<>();
-        binding.preList.setLayoutManager(new GridLayoutManager(this, 2));
+        binding.preList.setLayoutManager(new GridLayoutManager(this, 3));
         adapter = new WallpaperAdapter(wallpaperList);
         binding.preList.setAdapter(adapter);
     }
@@ -138,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (haveConnection()) {
             binding.btnPre.setVisibility(View.VISIBLE);
             binding.btnNext.setVisibility(View.VISIBLE);
-            fetchWallpapers();
+            fetchWallpapers("https://api.pexels.com/v1/curated/?page=" + pageNumber);
         } else {
             binding.btnPre.setVisibility(View.GONE);
             binding.btnNext.setVisibility(View.GONE);
@@ -168,7 +189,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (haveConnection()) {
                         wallpaperList.clear();
                         adapter.notifyDataSetChanged();
-                        fetchWallpapers();
+                        if (searchFlag) {
+                            String url = "https://api.pexels.com/v1/search?query=" + searchedText + "&page=" + pageNumber;
+                            fetchWallpapers(url);
+                        } else {
+                            fetchWallpapers("https://api.pexels.com/v1/curated/?page=" + pageNumber);
+                        }
+
 
                     }
                 }
@@ -181,7 +208,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (haveConnection()) {
                     wallpaperList.clear();
                     adapter.notifyDataSetChanged();
-                    fetchWallpapers();
+                    if (searchFlag) {
+                        String url = "https://api.pexels.com/v1/search?query=" + searchedText + "&page=" + pageNumber;
+                        fetchWallpapers(url);
+                    } else {
+                        fetchWallpapers("https://api.pexels.com/v1/curated/?page=" + pageNumber);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -197,8 +229,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SharedPreferences.Editor edit = sp.edit();
         edit = edit.putInt("page", pageNumber);
         edit.apply();
+    }
 
-        Toast.makeText(getApplicationContext(), ""+pageNumber, Toast.LENGTH_SHORT).show();
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.search_menu, menu);
+        MenuItem item = menu.findItem(R.id.itemSearch);
+        searchView = (SearchView) item.getActionView();
+        searchView.setQueryHint("Search Wallpaper");
+
+        ImageView searchIcon = searchView.findViewById(androidx.appcompat.R.id.search_button);
+        searchIcon.setColorFilter(getResources().getColor(R.color.black), PorterDuff.Mode.SRC_IN);
+
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @SuppressLint("NotifyDataSetChanged")
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                wallpaperList.clear();
+                adapter.notifyDataSetChanged();
+                searchedText = query;
+                String url = "https://api.pexels.com/v1/search?query=" + query + "&page=" + pageNumber;
+                fetchWallpapers(url);
+                searchFlag = true;
+                hideKeyboard(MainActivity.this);
+                return true;
+            }
+
+            @SuppressLint("NotifyDataSetChanged")
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        searchView.setOnCloseListener(() -> {
+            searchFlag = false;
+            searchView.onActionViewCollapsed();
+            pageNumber = 0;
+            return true;
+        });
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     @Override
@@ -211,6 +294,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.flag = true;
         Toast.makeText(this, "Click again to exit", Toast.LENGTH_SHORT).show();
         new Handler(Looper.getMainLooper()).postDelayed(() -> flag = false, 2000);
+
     }
 
 }

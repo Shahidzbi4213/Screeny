@@ -21,10 +21,4 @@
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 
-    <style name="Custom" parent="android:Theme.DeviceDefault.Dialog">
-        <item name="DialogTitleAppearance">@android:style/TextAppearance.Medium</item>
-        <item name="DialogSpotColor">#FFC107</item>
-        <item name="DialogSpotCount">6</item>
-        <item name="android:background">#0E1330</item>
-    </style>
 </resources>
