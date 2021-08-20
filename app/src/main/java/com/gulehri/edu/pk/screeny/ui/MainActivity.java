@@ -8,7 +8,6 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -77,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void fetchWallpapers() {
         if (haveConnection()) {
-            String url = "https://api.pexels.com/v1/curated/?page=" + pageNumber + "&per_page=40";
+            String url = "https://api.pexels.com/v1/curated/?page=" + pageNumber + "&per_page=80";
             StringRequest request = new StringRequest(Request.Method.GET,
                     url,
                     response -> {
@@ -129,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void setAdapter() {
         wallpaperList = new ArrayList<>();
-        binding.preList.setLayoutManager(new GridLayoutManager(this, 2));
+        binding.preList.setLayoutManager(new GridLayoutManager(this, 3));
         adapter = new WallpaperAdapter(wallpaperList);
         binding.preList.setAdapter(adapter);
     }

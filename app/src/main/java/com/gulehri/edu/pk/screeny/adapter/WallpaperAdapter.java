@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.gulehri.edu.pk.screeny.R;
 import com.gulehri.edu.pk.screeny.databinding.ImageItemBinding;
 import com.gulehri.edu.pk.screeny.model.Model;
 import com.gulehri.edu.pk.screeny.ui.FullActivity;
@@ -36,6 +37,7 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.Pics
 
         Glide.with(mContext)
                 .load(wallpaperList.get(position).getMediumUrl())
+                .placeholder(R.drawable.place)
                 .into(holder.binding.imageView);
 
         holder.itemView.setOnClickListener(v -> {
