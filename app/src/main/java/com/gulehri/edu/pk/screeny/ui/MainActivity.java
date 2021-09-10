@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -20,8 +19,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
-import androidx.core.graphics.BlendModeColorFilterCompat;
-import androidx.core.graphics.BlendModeCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.android.volley.Request;
@@ -29,7 +26,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.gulehri.edu.pk.screeny.R;
 import com.gulehri.edu.pk.screeny.adapter.WallpaperAdapter;
@@ -72,9 +68,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setListeners();
         setToolbar();
 
-        AdView adView = findViewById(R.id.adView);
+        //Loading Adds
         AdRequest adRequest = new AdRequest.Builder().build();
-        adView.loadAd(adRequest);
+        binding.adView.loadAd(adRequest);
 
     }
 
@@ -99,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void fetchWallpapers(String wUrl) {
         if (haveConnection()) {
+
+            //&per_page=80  == Show 80 images per pages
             String url = wUrl + "&per_page=80";
             StringRequest request = new StringRequest(Request.Method.GET,
                     url,
@@ -112,11 +110,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             for (int i = 0; i < len; i++) {
 
                                 final JSONObject object = photos.getJSONObject(i);
-
                                 final int id = object.getInt("id");
                                 final String imageUrl = object.getString("url");
                                 JSONObject src = object.getJSONObject("src");
-                                final String originalUrl = src.getString("original");
+                                final String originalUrl = src.getString("large2x");
                                 final String mediumUrl = src.getString("medium");
 
                                 Model model = new Model(id, imageUrl,originalUrl, mediumUrl);
@@ -130,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }, error -> {
             }) {
 
+                //Setting Header and Passing Over API Key without that API request won't work
                 @Override
                 public Map<String, String> getHeaders() {
                     Map<String, String> map = new HashMap<>();
@@ -238,6 +236,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         searchView = (SearchView) item.getActionView();
         searchView.setQueryHint("Search Wallpaper");
 
+        //Changing Search Icon Color
         ImageView searchIcon = searchView.findViewById(androidx.appcompat.R.id.search_button);
         searchIcon.setColorFilter(getResources().getColor(R.color.black), PorterDuff.Mode.SRC_IN);
 
@@ -248,8 +247,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public boolean onQueryTextSubmit(String query) {
                 wallpaperList.clear();
                 adapter.notifyDataSetChanged();
-                searchedText = query;
-                String url = "https://api.pexels.com/v1/search?query=" + query + "&page=" + pageNumber;
+                searchedText = query.trim();
+                String url = "https://api.pexels.com/v1/search?query=" + query.trim() + "&page=" + pageNumber;
                 fetchWallpapers(url);
                 searchFlag = true;
                 hideKeyboard(MainActivity.this);
@@ -265,6 +264,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         searchView.setOnCloseListener(() -> {
             searchFlag = false;
+
+            //Hide SearchView
             searchView.onActionViewCollapsed();
             pageNumber = 0;
             return true;

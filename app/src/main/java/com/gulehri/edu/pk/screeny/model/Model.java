@@ -6,6 +6,7 @@ public class Model {
 
     private String originalUrl;
     private String mediumUrl;
+    private String portraitUrl;
 
     public Model() {
     }
@@ -16,6 +17,7 @@ public class Model {
         this.originalUrl = originalUrl;
         this.mediumUrl = mediumUrl;
     }
+
 
     public String getImageUrl() {
         return imageUrl;

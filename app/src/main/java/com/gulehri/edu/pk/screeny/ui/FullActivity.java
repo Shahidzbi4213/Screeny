@@ -5,7 +5,6 @@ import static android.app.DownloadManager.Request.NETWORK_WIFI;
 import static android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.app.WallpaperManager;
 import android.content.Context;
@@ -21,6 +20,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -33,6 +34,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.gulehri.edu.pk.screeny.R;
 import com.gulehri.edu.pk.screeny.databinding.ActivityFullBinding;
@@ -42,17 +44,19 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_CODE = 4213;
     private ActivityFullBinding binding;
     private SharedPreferences sp;
-    private SharedPreferences.Editor edit;
     private String url;
     private String imageUrl;
     private String imageName;
-    private AlertDialog builder;
     private final String[] perms = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityFullBinding.inflate(getLayoutInflater());
+
+        //Hiding StatusBar
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(binding.getRoot());
 
         getData();
@@ -85,22 +89,27 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
 
     private void setImageToView() {
 
-        Glide.with(FullActivity.this).load(url).placeholder(R.drawable.pp).dontAnimate().listener(
-                new RequestListener<Drawable>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        hideButton();
-                        return false;
-                    }
+        Glide.with(FullActivity.this)
+                .load(url)
+                .placeholder(R.drawable.pp)
+                .listener(
+                        new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                hideButton();
+                                return false;
+                            }
 
-                    @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        binding.setWallpaper.setVisibility(View.VISIBLE);
-                        binding.btnDownload.setVisibility(View.VISIBLE);
-                        return false;
-                    }
-                }
-        ).into(binding.photoView);
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                binding.setWallpaper.setVisibility(View.VISIBLE);
+                                binding.btnDownload.setVisibility(View.VISIBLE);
+                                return false;
+                            }
+                        }
+                )
+                .dontAnimate()
+                .into(binding.photoView);
     }
 
     private void setListener() {
@@ -116,12 +125,6 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
         if (id == R.id.btn_download) {
             if (haveNetworkConnection()) {
                 askPermission();
-
-                if (builder.isShowing()){
-                    builder.hide();
-                    builder.dismiss();
-                }
-
             } else {
                 Toast.makeText(this, "No Connection", Toast.LENGTH_SHORT).show();
             }
@@ -199,7 +202,7 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
         sp = getPreferences(MODE_PRIVATE);
-        edit =sp.edit();
+        SharedPreferences.Editor edit = sp.edit();
         edit = edit.putString("photoUrl", url);
         edit.apply();
     }
