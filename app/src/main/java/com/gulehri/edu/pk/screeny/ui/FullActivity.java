@@ -16,6 +16,7 @@ import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
@@ -87,7 +88,8 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
 
     private void hideButton() {
         binding.btnDownload.setVisibility(View.GONE);
-        binding.setWallpaper.setVisibility(View.GONE);
+        binding.setHomeWallpaper.setVisibility(View.GONE);
+        binding.setLockWallpaper.setVisibility(View.GONE);
     }
 
     private void getData() {
@@ -111,7 +113,8 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
 
                             @Override
                             public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                                binding.setWallpaper.setVisibility(View.VISIBLE);
+                                binding.setLockWallpaper.setVisibility(View.VISIBLE);
+                                binding.setHomeWallpaper.setVisibility(View.VISIBLE);
                                 binding.btnDownload.setVisibility(View.VISIBLE);
                                 return false;
                             }
@@ -123,7 +126,8 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
 
     private void setListener() {
         binding.btnDownload.setOnClickListener(this);
-        binding.setWallpaper.setOnClickListener(this);
+        binding.setHomeWallpaper.setOnClickListener(this);
+        binding.setLockWallpaper.setOnClickListener(this);
 
     }
 
@@ -137,17 +141,41 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 Toast.makeText(this, "No Connection", Toast.LENGTH_SHORT).show();
             }
-        } else if (id == R.id.setWallpaper) {
-            putWallpaper();
+        } else if (id == R.id.setHomeWallpaper) {
+            putHomeWallpaper();
+        } else if (id == R.id.setLockWallpaper) {
+            putLockWallpaper();
         }
     }
 
-    private void putWallpaper() {
+    private void putLockWallpaper() {
+
         WallpaperManager manager = (WallpaperManager) this.getSystemService(WALLPAPER_SERVICE);
         Bitmap bitmap = ((BitmapDrawable) binding.photoView.getDrawable()).getBitmap();
 
         try {
-            manager.setBitmap(bitmap);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                manager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK);
+            } else {
+                manager.setBitmap(bitmap);
+            }
+            Toast.makeText(getApplicationContext(), "Wallpaper Changed", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void putHomeWallpaper() {
+        WallpaperManager manager = (WallpaperManager) this.getSystemService(WALLPAPER_SERVICE);
+        Bitmap bitmap = ((BitmapDrawable) binding.photoView.getDrawable()).getBitmap();
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                manager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM);
+            } else {
+                manager.setBitmap(bitmap);
+            }
             Toast.makeText(getApplicationContext(), "Wallpaper Changed", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             e.printStackTrace();
