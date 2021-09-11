@@ -27,6 +27,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.gulehri.edu.pk.screeny.R;
 import com.gulehri.edu.pk.screeny.adapter.WallpaperAdapter;
 import com.gulehri.edu.pk.screeny.databinding.ActivityMainBinding;
@@ -234,11 +235,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getMenuInflater().inflate(R.menu.search_menu, menu);
         MenuItem item = menu.findItem(R.id.itemSearch);
         searchView = (SearchView) item.getActionView();
+        searchView.setMaxWidth(Integer.MAX_VALUE);
         searchView.setQueryHint("Search Wallpaper");
 
         //Changing Search Icon Color
         ImageView searchIcon = searchView.findViewById(androidx.appcompat.R.id.search_button);
         searchIcon.setColorFilter(getResources().getColor(R.color.black), PorterDuff.Mode.SRC_IN);
+
+        searchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                // searchView expanded
+                binding.tBarMain.toolbarText.setVisibility(View.GONE);
+                Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
+            }
+        });
+
+
 
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -265,6 +277,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         searchView.setOnCloseListener(() -> {
             searchFlag = false;
 
+            binding.tBarMain.toolbarText.setVisibility(View.VISIBLE);
             //Hide SearchView
             searchView.onActionViewCollapsed();
             pageNumber = 0;

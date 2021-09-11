@@ -34,8 +34,12 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.gulehri.edu.pk.screeny.R;
 import com.gulehri.edu.pk.screeny.databinding.ActivityFullBinding;
 
@@ -48,6 +52,7 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
     private String imageUrl;
     private String imageName;
     private final String[] perms = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private InterstitialAd mInterstitialAd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +63,24 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(binding.getRoot());
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        InterstitialAd.load(FullActivity.this,
+                "ca-app-pub-3940256099942544/1033173712",
+                adRequest, new InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                        super.onAdLoaded(interstitialAd);
+                        mInterstitialAd = interstitialAd;
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        super.onAdFailedToLoad(loadAdError);
+                        mInterstitialAd = null;
+                    }
+                });
+
 
         getData();
         setImageName();
@@ -205,5 +228,25 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
         SharedPreferences.Editor edit = sp.edit();
         edit = edit.putString("photoUrl", url);
         edit.apply();
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        if (mInterstitialAd != null) {
+            mInterstitialAd.show(FullActivity.this);
+
+            //Calls when Add close button is clicked
+            mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    super.onAdDismissedFullScreenContent();
+                    FullActivity.super.onBackPressed();
+                }
+            });
+        } else {
+            super.onBackPressed();
+        }
+
     }
 }
