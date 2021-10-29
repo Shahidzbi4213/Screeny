@@ -63,7 +63,7 @@ public class FullActivity extends AppCompatActivity implements View.OnClickListe
 
         AdRequest adRequest = new AdRequest.Builder().build();
         InterstitialAd.load(FullActivity.this,
-                "ca-app-pub-3940256099942544/1033173712",
+                "UNIT_ID",
                 adRequest, new InterstitialAdLoadCallback() {
                     @Override
                     public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
